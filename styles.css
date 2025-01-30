@@ -1,3 +1,4 @@
+/* Basic body and layout */
 body {
     font-family: 'Arial', sans-serif;
     background: linear-gradient(to right, #74ebd5, #ACB6E5);
@@ -36,6 +37,63 @@ h1 {
 @keyframes slideIn {
     from { transform: translateX(-50%); }
     to { transform: translateX(0); }
+}
+
+/* Login/Register Form */
+#auth-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#email, #password {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    font-size: 16px;
+    width: 100%;
+    box-sizing: border-box;
+    transition: box-shadow 0.3s ease;
+}
+
+#email:focus, #password:focus {
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    border-color: #007bff;
+}
+
+button {
+    padding: 12px;
+    border: none;
+    background-color: #5cb85c;
+    color: #ffffff;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 100%;
+    margin-bottom: 10px;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #4cae4c;
+}
+
+#auth-container p {
+    color: #d9534f;
+    font-size: 14px;
+}
+
+/* To-Do List Styling */
+.container {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    width: 350px;
+    max-width: 90%;
+    animation: fadeIn 1s ease-in-out;
 }
 
 .input-container {
@@ -146,4 +204,14 @@ li.completed {
 
 .remove-btn:hover {
     color: #c9302c;
+}
+
+/* Hide logout button if not logged in */
+#logout-btn {
+    display: none;
+}
+
+/* Show logout button if logged in */
+#auth-container.hidden + #todo-container #logout-btn {
+    display: block;
 }

@@ -8,7 +8,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <div class="container">
+    <!-- Authentication Section -->
+    <div id="auth-container">
+        <h2>Login or Register</h2>
+        <input type="email" id="email" placeholder="Enter Email">
+        <input type="password" id="password" placeholder="Enter Password">
+        <button id="register-btn">Register</button>
+        <button id="login-btn">Login</button>
+        <p id="message"></p>
+    </div>
+
+    <!-- To-Do List Section -->
+    <div class="container" id="todo-container" style="display: none;">
         <h1><i class="fas fa-list-ul"></i> To-Do List</h1>
         <div class="input-container">
             <input type="text" id="task-input" placeholder="Add a new task...">
@@ -16,7 +27,160 @@
             <button id="add-task-btn"><i class="fas fa-plus"></i> Add</button>
         </div>
         <ul id="task-list"></ul>
+
+        <!-- Logout Button inside To-Do List -->
+        <button id="logout-btn" onclick="logout()">Logout</button>
     </div>
+
+    <script type="module">
+        // Firebase Configuration
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js';
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA3Ubg-ba_83h2t5zzA57Frs_kEVarKrR4",
+            authDomain: "todoliz.firebaseapp.com",
+            projectId: "todoliz",
+            storageBucket: "todoliz.firebasestorage.app",
+            messagingSenderId: "1093553690407",
+            appId: "1:1093553690407:web:2b723654a501d541ff3b02",
+            measurementId: "G-MKQZWKWE0G"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Force logout when page loads
+        signOut(auth);
+
+        // Handle Auth State Change
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                // If user is signed in, show To-Do list and hide Auth section
+                document.getElementById('auth-container').style.display = "none";
+                document.getElementById('todo-container').style.display = "block";
+                document.getElementById('logout-btn').style.display = "inline-block";  // Show logout button
+            } else {
+                // If no user is signed in, show Login/Register section and hide To-Do list
+                document.getElementById('auth-container').style.display = "block";
+                document.getElementById('todo-container').style.display = "none";
+                document.getElementById('logout-btn').style.display = "none";  // Hide logout button
+            }
+        });
+
+        // Register function
+        document.getElementById('register-btn').addEventListener('click', register);
+        function register() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            createUserWithEmailAndPassword(auth, email, password)
+                .then(() => {
+                    document.getElementById('message').innerText = "Registered successfully!";
+                })
+                .catch(error => {
+                    document.getElementById('message').innerText = error.message;
+                });
+        }
+
+        // Login function
+        document.getElementById('login-btn').addEventListener('click', login);
+        function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            signInWithEmailAndPassword(auth, email, password)
+                .then(() => {
+                    // UI update already handled by onAuthStateChanged
+                })
+                .catch(error => {
+                    document.getElementById('message').innerText = error.message;
+                });
+        }
+
+        // Logout function
+        function logout() {
+            signOut(auth).then(() => {
+                // After signing out, reload the page to show login screen
+                window.location.reload();
+            });
+        }
+
+        // Add Task function
+        document.getElementById('add-task-btn').addEventListener('click', addTask);
+        function addTask() {
+            const taskInput = document.getElementById('task-input');
+            const taskDatetime = document.getElementById('task-datetime');
+            const taskText = taskInput.value.trim();
+            const reminderDate = taskDatetime.value;
+
+            if (taskText === '') {
+                alert("Please enter a task!");
+                return;
+            }
+
+            const taskList = document.getElementById('task-list');
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <span class="task-text">${taskText}</span>
+                <span class="task-datetime">${reminderDate ? new Date(reminderDate).toLocaleString() : ''}</span>
+                <button class="remove-btn"><i class="fas fa-times"></i></button>
+            `;
+            
+            const removeBtn = li.querySelector('.remove-btn');
+            removeBtn.addEventListener('click', () => {
+                li.classList.add('removing');
+                setTimeout(() => {
+                    clearInterval(li.timer);
+                    taskList.removeChild(li);
+                }, 300);
+            });
+
+            li.addEventListener('click', () => {
+                li.classList.toggle('completed');
+            });
+
+            if (reminderDate) {
+                setReminder(reminderDate, li);
+            }
+
+            taskList.appendChild(li);
+            taskInput.value = '';
+            taskDatetime.value = '';
+        }
+
+        // Set reminder for a task
+        function setReminder(dateString, taskElement) {
+            const reminderTime = new Date(dateString).getTime();
+            const now = new Date().getTime();
+            const timeDiff = reminderTime - now;
+
+            if (timeDiff > 0) {
+                taskElement.timer = setTimeout(() => {
+                    showNotification(taskElement.querySelector('.task-text').textContent);
+                }, timeDiff);
+            }
+        }
+
+        // Show notification for task reminder
+        function showNotification(taskText) {
+            if (Notification.permission === 'granted') {
+                new Notification('Reminder!', {
+                    body: `It's time to: ${taskText}`
+                });
+            } else if (Notification.permission !== 'denied') {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        new Notification('Reminder!', {
+                            body: `It's time to: ${taskText}`
+                        });
+                    }
+                });
+            } else {
+                alert("Notifications are disabled. Please enable them in your browser settings.");
+            }
+        }
+    </script>
+
     <script src="script.js"></script>
 </body>
 </html>
