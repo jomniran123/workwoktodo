@@ -29,81 +29,99 @@
         <ul id="task-list"></ul>
 
         <!-- Logout Button inside To-Do List -->
-        <button id="logout-btn" onclick="logout()">Logout</button>
+        <button id="logout-btn">Logout</button>
     </div>
 
     <script type="module">
         // Firebase Configuration
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js';
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js';
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyA3Ubg-ba_83h2t5zzA57Frs_kEVarKrR4",
-            authDomain: "todoliz.firebaseapp.com",
-            projectId: "todoliz",
-            storageBucket: "todoliz.firebasestorage.app",
-            messagingSenderId: "1093553690407",
-            appId: "1:1093553690407:web:2b723654a501d541ff3b02",
-            measurementId: "G-MKQZWKWE0G"
-        };
+// การตั้งค่า Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyA3Ubg-ba_83h2t5zzA57Frs_kEVarKrR4",
+    authDomain: "todoliz.firebaseapp.com",
+    projectId: "todoliz",
+    storageBucket: "todoliz.firebasestorage.app",
+    messagingSenderId: "1093553690407",
+    appId: "1:1093553690407:web:2b723654a501d541ff3b02",
+    measurementId: "G-MKQZWKWE0G"
+};
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
-        // Force logout when page loads
-        signOut(auth);
-
-        // Handle Auth State Change
-        onAuthStateChanged(auth, user => {
-            if (user) {
-                // If user is signed in, show To-Do list and hide Auth section
-                document.getElementById('auth-container').style.display = "none";
-                document.getElementById('todo-container').style.display = "block";
-                document.getElementById('logout-btn').style.display = "inline-block";  // Show logout button
-            } else {
-                // If no user is signed in, show Login/Register section and hide To-Do list
-                document.getElementById('auth-container').style.display = "block";
-                document.getElementById('todo-container').style.display = "none";
-                document.getElementById('logout-btn').style.display = "none";  // Hide logout button
-            }
-        });
+// ตรวจสอบสถานะผู้ใช้
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        console.log("User is logged in", user);
+        document.getElementById('logout-btn').style.display = "block";
+        document.getElementById('todo-container').style.display = "block";
+        document.getElementById('auth-container').style.display = "none";
+    } else {
+        console.log("No user is logged in");
+        document.getElementById('logout-btn').style.display = "none";
+        document.getElementById('todo-container').style.display = "none";
+        document.getElementById('auth-container').style.display = "block";
+    }
+});
 
         // Register function
-        document.getElementById('register-btn').addEventListener('click', register);
-        function register() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            createUserWithEmailAndPassword(auth, email, password)
-                .then(() => {
-                    document.getElementById('message').innerText = "Registered successfully!";
-                })
-                .catch(error => {
-                    document.getElementById('message').innerText = error.message;
-                });
-        }
+document.getElementById('register-btn').addEventListener('click', register);
+function register() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    createUserWithEmailAndPassword(auth, email, password)
+        .then(() => {
+            document.getElementById('message').innerText = "Registered successfully!";
+        })
+        .catch(error => {
+            document.getElementById('message').innerText = error.message;
+        });
+}
 
-        // Login function
-        document.getElementById('login-btn').addEventListener('click', login);
-        function login() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            signInWithEmailAndPassword(auth, email, password)
-                .then(() => {
-                    // UI update already handled by onAuthStateChanged
-                })
-                .catch(error => {
-                    document.getElementById('message').innerText = error.message;
-                });
-        }
+// Login function
+document.getElementById('login-btn').addEventListener('click', login);
+function login() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    signInWithEmailAndPassword(auth, email, password)
+        .then(() => {
+            // UI update already handled by onAuthStateChanged
+        })
+        .catch(error => {
+            document.getElementById('message').innerText = error.message;
+        });
+}
 
-        // Logout function
-        function logout() {
-            signOut(auth).then(() => {
-                // After signing out, reload the page to show login screen
+        // ฟังก์ชัน Logout
+function logout() {
+    signOut(auth)
+        .then(() => {
+            console.log("User logged out successfully");
+            document.getElementById('todo-container').style.display = "none";
+            document.getElementById('auth-container').style.display = "block";
+            setTimeout(() => {
                 window.location.reload();
-            });
-        }
+            }, 500);
+        })
+        .catch(error => {
+            console.error("Logout failed:", error);
+        });
+}
+
+// เชื่อมปุ่ม Logout กับฟังก์ชัน logout
+window.addEventListener('DOMContentLoaded', () => {
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', logout);
+    }
+    console.log("Script loaded successfully");
+});
+
+
+
+
 
         // Add Task function
         document.getElementById('add-task-btn').addEventListener('click', addTask);
@@ -178,6 +196,7 @@
             } else {
                 alert("Notifications are disabled. Please enable them in your browser settings.");
             }
+
         }
     </script>
 

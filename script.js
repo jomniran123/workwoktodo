@@ -77,16 +77,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Logout function
-    function logout() {
-        signOut(auth)
-            .then(() => {
-                // The UI will automatically update due to onAuthStateChanged
-            })
-            .catch(error => {
-                messageContainer.innerText = error.message;
-            });
-    }
+    // เชื่อมปุ่ม logout กับฟังก์ชัน logout()
+document.getElementById('logout-btn').addEventListener('click', logout);
+
+// Logout function
+function logout() {
+    signOut(auth)
+        .then(() => {
+            console.log("User logged out successfully");
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+        })
+        .catch(error => {
+            console.error("Logout failed:", error);
+        });
+}
 
     // Add task function
     function addTask() {
